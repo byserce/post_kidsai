@@ -10,9 +10,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        body: ['Fredoka', 'sans-serif'],
-        headline: ['Fredoka', 'sans-serif'],
-        code: ['monospace'],
+        headline: ['"Titan One"', 'cursive'], // Yeni şişman font
+        body: ['"Nunito"', 'sans-serif'], // Okunaklı alt font
       },
       colors: {
         background: 'hsl(var(--background))',

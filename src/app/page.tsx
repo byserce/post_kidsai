@@ -1,263 +1,259 @@
+// src/app/page.tsx
 "use client";
 
-import { useState, useRef, useEffect, createRef } from 'react';
-import { layouts, LayoutConfig, SlideContent } from '@/components/layouts';
-import { PostTemplate } from '@/components/post-template';
-import { Image as ImageIcon, Upload } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { useEditorStore } from '@/core/store';
+import { SlideRenderer } from '@/components/renderer/SlideRenderer';
+import { EditorPanel } from '@/components/editor/EditorPanel';
+import { Plus } from 'lucide-react';
 
-export default function Home() {
-  const [activeLayoutKey, setActiveLayoutKey] = useState('launchAnnouncement');
-  const activeLayout = layouts[activeLayoutKey] || layouts['launchAnnouncement'];
-  
-  const [slides, setSlides] = useState<SlideContent[]>(activeLayout.slides);
-  const [images, setImages] = useState<Record<number, string | null>>({});
-  
-  const slideRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
-
-  useEffect(() => {
-    if (layouts[activeLayoutKey]) {
-      setSlides(layouts[activeLayoutKey].slides);
+// PROFESYONEL ÇOCUK UYGULAMASI DEMO VERİSİ
+const KIDS_APP_DEMO = [
+  {
+    id: 'slide-1',
+    layoutId: 'hero-v1',
+    themeColor: 'cyan', // Uygulamanın ana rengi
+    content: {
+      tr: { 
+        title: 'KidsAI Dünyası', 
+        subtitle: 'YAPAY ZEKA KAMERA', 
+        cta: 'Hemen İndir',
+        description: 'Kamerayı doğrult, yapay zeka tanısın! Çocuklar için en eğlenceli öğrenme aracı.',
+        rating: '8 Dilde Eğitim'
+      },
+      en: { 
+        title: 'KidsAI World', 
+        subtitle: 'AI CAMERA MAGIC', 
+        cta: 'Download Now',
+        description: 'Point the camera, let AI recognize it! The most fun way to learn for kids.',
+        rating: 'Learn in 8 Languages'
+      },
+      de: { 
+        title: 'KidsAI Welt', 
+        subtitle: 'KI-KAMERA MAGIE', 
+        cta: 'Jetzt Laden',
+        description: 'Richte die Kamera aus, lass die KI es erkennen!',
+        rating: 'Lernen in 8 Sprachen'
+      },
+      es: { 
+        title: 'Mundo KidsAI', subtitle: 'CÁMARA IA MÁGICA', cta: 'Descargar', description: '¡Apunta la cámara y aprende!', rating: 'Aprende en 8 Idiomas' 
+      },
+      fr: { 
+        title: 'Monde KidsAI', subtitle: 'MAGIE CAMÉRA IA', cta: 'Télécharger', description: 'Pointez la caméra, laissez l\'IA reconnaître !', rating: 'Apprendre en 8 langues' 
+      },
+      ja: { 
+        title: 'KidsAIワールド', subtitle: 'AIカメラの魔法', cta: 'ダウンロード', description: 'カメラを向けて、AIに認識させよう！', rating: '8ヶ国語で学ぶ' 
+      },
+      ko: { 
+        title: 'KidsAI 월드', subtitle: 'AI 카메라 매직', cta: '다운로드', description: '카메라를 비추고 AI가 인식하게 하세요!', rating: '8개 언어로 학습' 
+      },
+      ar: { 
+        title: 'عالم KidsAI', subtitle: 'سحر الكاميرا', cta: 'حمل الآن', description: 'وجه الكاميرا، ودع الذكاء الاصطناعي يتعرف عليها!', rating: 'تعلم بـ 8 لغات' 
+      },
+    },
+    phone: {
+      transform: { x: 0, y: 40, rotateX: -5, rotateY: -5, rotateZ: 0, scale: 1.1 }
+    },
+    image: {
+      url: 'https://images.unsplash.com/photo-1602030028438-4cf153cbae9e?q=80&w=800&auto=format&fit=crop', // Çocuk ve Tablet görseli
+      fit: 'cover',
+      transform: { x: 0, y: 0, scale: 1.1, rotateZ: 0 }
     }
-  }, [activeLayoutKey]);
-
-  if (slideRefs.current.length !== slides.length) {
-    slideRefs.current = Array(slides.length)
-      .fill(null)
-      .map((_, i) => slideRefs.current[i] || createRef());
+  },
+  {
+    id: 'slide-2',
+    layoutId: 'classic-v1',
+    themeColor: 'rose', // Klasik Mod rengi
+    content: {
+      tr: { title: 'Klasik Mod', subtitle: 'FOTOĞRAF ÇEK', cta: 'Hemen Dene', description: 'İnternet olmasa bile dilediğin zaman fotoğraf çek, nesnelerin ismini anında öğren!', rating: 'Eğitici' },
+      en: { title: 'Classic Mode', subtitle: 'TAKE PHOTO', cta: 'Try Now', description: 'Take photos anytime, even without internet, and learn object names instantly!', rating: 'Educational' },
+      de: { title: 'Klassik Modus', subtitle: 'FOTO MACHEN', cta: 'Probieren', description: 'Mach jederzeit Fotos, auch ohne Internet, und lerne sofort Namen!', rating: 'Lehrreich' },
+      es: { title: 'Modo Clásico', subtitle: 'TOMAR FOTO', cta: 'Probar', description: '¡Toma fotos en cualquier momento, incluso sin internet, y aprende nombres!', rating: 'Educativo' },
+      fr: { title: 'Mode Classique', subtitle: 'PRENDRE PHOTO', cta: 'Essayer', description: 'Prenez des photos à tout moment, même sans internet, et apprenez !', rating: 'Éducatif' },
+      ja: { title: 'クラシックモード', subtitle: '写真を撮る', cta: '試す', description: 'インターネットがなくても、いつでも写真を撮って名前を学ぼう！', rating: '教育的' },
+      ko: { title: '클래식 모드', subtitle: '사진 찍기', cta: '시도하기', description: '인터넷 없이도 언제든지 사진을 찍고 이름을 배우세요!', rating: '교육용' },
+      ar: { title: 'الوضع الكلاسيكي', subtitle: 'التقط صورة', cta: 'جرب الآن', description: 'التقط الصور في أي وقت، حتى بدون إنترنت، وتعلم الأسماء فوراً!', rating: 'تعليمي' },
+    },
+    phone: {
+      transform: { x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1.0 }
+    },
+    image: {
+      url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=800&auto=format&fit=crop', // Köpek görseli
+      fit: 'cover',
+      transform: { x: 0, y: 0, scale: 1, rotateZ: 0 }
+    }
+  },
+  {
+    id: 'slide-3',
+    layoutId: 'smart-v1',
+    themeColor: 'purple', // Akıllı Mod (Smart Mode) rengi
+    content: {
+      tr: { 
+        title: 'Akıllı Mod', subtitle: 'AI ÖĞRETMEN', cta: 'Keşfet', description: 'Sadece ismini değil, ne olduğunu da anlatır! Çocuklar için basitleştirilmiş detaylı açıklamalar.', rating: "Editörün Seçimi",
+        bubble_1_title: "AI Analiz", bubble_1_main: "Bu bir Kedi! 🐱", bubble_1_sub: "Yumuşak tüyleri vardır ve mırıldanır.",
+        bubble_2_title: "Öğrenme Modu", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
+      },
+      en: { 
+        title: 'Smart Mode', subtitle: 'AI TEACHER', cta: 'Explore', description: 'Not just the name, but explains what it is! Detailed explanations simplified for kids.', rating: "Editor's Choice",
+        bubble_1_title: "AI Analysis", bubble_1_main: "This is a Cat! 🐱", bubble_1_sub: "It has soft fur and purrs.",
+        bubble_2_title: "Learning Mode", bubble_2_main: "¡Es un Gato! 🐱", bubble_2_sub: "Tiene pelaje suave y ronronea."
+      },
+      de: { 
+        title: 'Smart Modus', subtitle: 'KI LEHRER', cta: 'Entdecken', description: 'Nicht nur der Name, sondern auch Erklärungen! Kindgerecht vereinfacht.', rating: "Editor's Choice",
+        bubble_1_title: "KI Analyse", bubble_1_main: "Das ist eine Katze! 🐱", bubble_1_sub: "Sie hat weiches Fell und schnurrt.",
+        bubble_2_title: "Lernmodus", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
+      },
+      es: { 
+        title: 'Modo Inteligente', subtitle: 'PROFESOR IA', cta: 'Explorar', description: '¡No solo el nombre, explica qué es! Explicaciones detalladas para niños.', rating: "Editor's Choice",
+        bubble_1_title: "Análisis IA", bubble_1_main: "¡Es un Gato! 🐱", bubble_1_sub: "Tiene pelaje suave y ronronea.",
+        bubble_2_title: "Modo Aprendizaje", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
+      },
+      fr: { 
+        title: 'Mode Intelligent', subtitle: 'PROFESSEUR IA', cta: 'Explorer', description: 'Pas seulement le nom, mais explique ce que c\'est ! Explications simplifiées.', rating: "Choix de l'éditeur",
+        bubble_1_title: "Analyse IA", bubble_1_main: "C'est un Chat ! 🐱", bubble_1_sub: "Il a une fourrure douce et ronronne.",
+        bubble_2_title: "Mode Apprentissage", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
+      },
+      ja: { 
+        title: 'スマートモード', subtitle: 'AI先生', cta: '探検する', description: '名前だけでなく、それが何かも説明します！子供向けにわかりやすく解説。', rating: '編集部のおすすめ',
+        bubble_1_title: "AI分析", bubble_1_main: "これは猫です！ 🐱", bubble_1_sub: "柔らかい毛並みで喉を鳴らします。",
+        bubble_2_title: "学習モード", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
+      },
+      ko: { 
+        title: '스마트 모드', subtitle: 'AI 선생님', cta: '탐험하기', description: '이름뿐만 아니라 무엇인지도 설명해줍니다! 아이들을 위한 쉬운 설명.', rating: '에디터의 선택',
+        bubble_1_title: "AI 분석", bubble_1_main: "이것은 고양이입니다! 🐱", bubble_1_sub: "부드러운 털을 가지고 있고 가르랑거립니다.",
+        bubble_2_title: "학습 모드", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
+      },
+      ar: { 
+        title: 'الوضع الذكي', subtitle: 'معلم الذكاء', cta: 'استكشف', description: 'لا يذكر الاسم فقط، بل يشرح ما هو! شروحات مفصلة ومبسطة للأطفال.', rating: 'اختيار المحرر',
+        bubble_1_title: "تحليل الذكاء", bubble_1_main: "هذه قطة! 🐱", bubble_1_sub: "لديها فراء ناعم وتخرخر.",
+        bubble_2_title: "وضع التعلم", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
+      },
+    },
+    phone: {
+      transform: { x: 0, y: 20, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1.2 }
+    },
+    image: {
+      url: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=800&auto=format&fit=crop', // Mutlu çocuk görseli
+      fit: 'cover',
+      transform: { x: 0, y: 0, scale: 1.1, rotateZ: 0 }
+    }
   }
+];
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>, slideId: number) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImages((prev) => ({ ...prev, [slideId]: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+export default function PostFactoryPage() {
+  const { slides, addSlide, activeSlideId, selectSlide, activeLanguage } = useEditorStore();
+  
+  // Zustand'ın state'ini toplu güncellemek için setState fonksiyonuna erişiyoruz
+  const setState = useEditorStore.setState;
+  const isLoaded = useRef(false);
+
+  // Sayfa ilk yüklendiğinde: Demo verisini al + LocalStorage'daki görsel ayarları uygula
+  useEffect(() => {
+    const savedData = localStorage.getItem('kidsai-post-creator-v1');
+    
+    // Demo verisinin temiz bir kopyasını oluştur
+    let initialSlides = JSON.parse(JSON.stringify(KIDS_APP_DEMO));
+
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        // Sadece görsel ayarları (overrides) demo verisiyle birleştir
+        if (parsed.overrides && Array.isArray(parsed.overrides)) {
+          console.log("Local storage görsel ayarları yüklendi.");
+          
+          initialSlides = initialSlides.map((slide: any) => {
+            const saved = parsed.overrides.find((o: any) => o.id === slide.id);
+            if (saved) {
+              return {
+                ...slide,
+                phone: saved.phone || slide.phone, // Kayıtlı telefon konumu
+                image: saved.image || slide.image  // Kayıtlı resim
+              };
+            }
+            return slide;
+          });
+        }
+      } catch (e) {
+        console.error("Local storage yüklenemedi:", e);
+      }
     }
-  };
 
-  const updateSlideProperty = (id: number, field: keyof SlideContent, value: any) => {
-    setSlides(slides.map(slide => 
-      slide.id === id ? { ...slide, [field]: value } : slide
-    ));
-  };
+    // State'i başlat
+    setState({ 
+      slides: initialSlides, 
+      activeSlideId: initialSlides[0].id 
+    });
+    
+    isLoaded.current = true;
+  }, []);
+
+  // Sadece görsel ayarları (Phone ve Image) kaydet, yazıları kaydetme
+  useEffect(() => {
+    if (!isLoaded.current) return;
+
+    // Sadece id, phone ve image verilerini filtrele
+    const overrides = slides.map(s => ({
+      id: s.id,
+      phone: s.phone,
+      image: s.image
+    }));
+    
+    localStorage.setItem('kidsai-post-creator-v1', JSON.stringify({ overrides }));
+  }, [slides]);
 
   return (
-    <main className="min-h-screen bg-slate-100 font-sans text-slate-900 overflow-hidden">
+    <div className="flex w-full h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
       
-      {/* Üst Bar */}
-      <header className="bg-white border-b border-slate-200 px-8 py-4 flex justify-between items-center fixed top-0 left-0 right-0 z-10 h-20">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 bg-gradient-to-br from-pink-500 to-yellow-500 rounded-xl flex items-center justify-center text-2xl">🦊</div>
-          <div>
-            <h1 className="text-2xl font-luckiest text-slate-800 tracking-wider">KidsAI Post Studio</h1>
-            <p className="text-sm text-slate-500 font-fredoka">Instagram İçerik Üreticisi</p>
-          </div>
-        </div>
+      {/* SOL: Slayt Listesi */}
+      <div className="w-24 bg-white border-r border-slate-200 flex flex-col items-center py-4 gap-4 z-20 overflow-y-auto custom-scrollbar">
+        {slides.map((slide, index) => (
+          <button
+            key={slide.id}
+            onClick={() => selectSlide(slide.id)}
+            className={`w-16 h-16 rounded-xl border-2 transition-all overflow-hidden relative shrink-0 ${
+              activeSlideId === slide.id ? 'border-blue-600 ring-2 ring-blue-100 scale-105' : 'border-slate-200 hover:border-slate-400'
+            }`}
+          >
+            {/* Küçük Önizleme - Performans için scale kullanıyoruz */}
+            <div className="absolute inset-0 scale-[0.15] origin-top-left w-[1080px] h-[1350px] pointer-events-none bg-white">
+                <SlideRenderer data={slide} lang={activeLanguage} />
+            </div>
+            <div className="absolute bottom-0 right-0 bg-black text-white text-[10px] px-1 font-bold">{index + 1}</div>
+          </button>
+        ))}
         
-        <select 
-          value={activeLayoutKey}
-          onChange={(e) => setActiveLayoutKey(e.target.value)}
-          className="p-3 pl-4 pr-10 border-2 border-slate-200 rounded-xl bg-slate-50 font-fredoka font-bold focus:border-blue-400 outline-none appearance-none cursor-pointer"
-          style={{ backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20width%3D%27292.4%27%20height%3D%27292.4%27%3E%3Cpath%20fill%3D%27%23CBD5E0%27%20d%3D%27M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%27%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 1rem center', backgroundSize: '0.8em' }}
+        <button 
+            onClick={() => addSlide('split-v1')} 
+            className="w-12 h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 shrink-0 transition-colors"
+            title="Yeni Slayt Ekle"
         >
-          {Object.entries(layouts).map(([key, config]) => (
-            <option key={key} value={key}>
-              {config.name}
-            </option>
-          ))}
-        </select>
-      </header>
-
-      {/* Ana İçerik */}
-      <div className="flex h-[calc(100vh-80px)] mt-20">
-        
-        {/* SOL: Kontrol Paneli (Scroll edilebilir) */}
-        <div className="w-[400px] bg-white border-r border-slate-200 overflow-y-auto p-6 custom-scrollbar">
-          <div className="space-y-8 pb-8">
-            {slides.map((slide, index) => (
-              <div key={slide.id} className="bg-slate-50 p-6 rounded-2xl border-2 border-slate-200/60">
-                <h3 className="font-luckiest text-xl mb-6 flex items-center gap-3 text-slate-700">
-                  <span className="bg-yellow-400 text-yellow-900 w-8 h-8 rounded-full flex items-center justify-center text-base border-2 border-white shadow-sm">
-                    {index + 1}
-                  </span>
-                  Slayt Ayarları
-                </h3>
-
-                <div className="space-y-5 font-fredoka">
-                  
-                  {/* Telefon Ayarları */}
-                  <div className="space-y-4 border-b-2 border-slate-200 pb-5">
-                    <h4 className="text-sm font-bold text-slate-600">Telefon Duruşu</h4>
-                    
-                    <div className="grid grid-cols-2 gap-3">
-                        <select
-                            value={slide.phoneStyle || 'default'}
-                            onChange={(e) => updateSlideProperty(slide.id, 'phoneStyle', e.target.value)}
-                            className="col-span-2 p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 outline-none bg-white font-bold text-sm"
-                        >
-                            <option value="default">Varsayılan (Düz)</option>
-                            <option value="floating">Havada (Floating)</option>
-                            <option value="tilted-left">Sola Yatık</option>
-                            <option value="tilted-right">Sağa Yatık</option>
-                            <option value="flat">Düz & Küçük (Flat)</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1">Telefon Boyutu ({slide.phoneScale || 1}x)</label>
-                        <input
-                          type="range" min="0.5" max="2" step="0.05"
-                          value={slide.phoneScale || 1}
-                          onChange={(e) => updateSlideProperty(slide.id, 'phoneScale', parseFloat(e.target.value))}
-                          className="w-full accent-blue-500"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1">Telefon Pozisyonu (X / Y)</label>
-                        <div className='flex gap-2'>
-                          <input type="range" min="-300" max="300" value={slide.phonePosition?.x ?? 0} onChange={(e) => updateSlideProperty(slide.id, 'phonePosition', { ...(slide.phonePosition || { x: 0, y: 0 }), x: parseInt(e.target.value) })} className="w-full accent-blue-500" title="Yatay Pozisyon" />
-                          <input type="range" min="-300" max="300" value={slide.phonePosition?.y ?? 0} onChange={(e) => updateSlideProperty(slide.id, 'phonePosition', { ...(slide.phonePosition || { x: 0, y: 0 }), y: parseInt(e.target.value) })} className="w-full accent-blue-500" title="Dikey Pozisyon" />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-bold text-slate-500 mb-1">Telefon Açısı ({slide.phoneRotation ?? 0}°)</label>
-                        <input
-                          type="range" min="-45" max="45" step="1"
-                          value={slide.phoneRotation ?? 0}
-                          onChange={(e) => updateSlideProperty(slide.id, 'phoneRotation', parseInt(e.target.value))}
-                          className="w-full accent-blue-500"
-                        />
-                    </div>
-                  </div>
-
-                  {/* Görsel Yükleme */}
-                  <div>
-                    <label className="block text-sm font-bold text-slate-600 mb-3">Ekran Görüntüsü</label>
-                    <label className="cursor-pointer flex flex-col items-center justify-center gap-2 p-6 border-3 border-dashed border-slate-300 rounded-2xl hover:border-blue-400 hover:bg-blue-50/50 transition-all group bg-white">
-                      {images[slide.id] ? (
-                        <img src={images[slide.id]!} className="h-32 object-contain rounded-lg shadow-sm" />
-                      ) : (
-                        <>
-                          <Upload size={28} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
-                          <span className="text-sm font-bold text-slate-500 group-hover:text-blue-600">Görsel Seçin</span>
-                        </>
-                      )}
-                      <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, slide.id)} />
-                    </label>
-                  </div>
-
-                  {/* Görsel Ayarları */}
-                  {images[slide.id] && (
-                    <div className="space-y-5 font-fredoka border-t-2 border-slate-200 pt-5 mt-5">
-                      <h4 className="text-sm font-bold text-slate-600 mb-2">Görsel Ayarları</h4>
-                      
-                      {/* Yakınlaştırma (Zoom) */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-500 mb-1">Yakınlaştırma ({slide.imageZoom || 1}x)</label>
-                        <input
-                          type="range" min="0.5" max="3" step="0.05"
-                          value={slide.imageZoom || 1}
-                          onChange={(e) => updateSlideProperty(slide.id, 'imageZoom', parseFloat(e.target.value))}
-                          className="w-full accent-blue-500"
-                        />
-                      </div>
-
-                      {/* Döndürme (Rotation) */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-500 mb-1">Döndürme ({slide.imageRotation || 0}°)</label>
-                        <input
-                          type="range" min="-45" max="45" step="1"
-                          value={slide.imageRotation || 0}
-                          onChange={(e) => updateSlideProperty(slide.id, 'imageRotation', parseInt(e.target.value))}
-                          className="w-full accent-blue-500"
-                        />
-                      </div>
-
-                      {/* Sığdırma (Fit) */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-500 mb-2">Sığdırma</label>
-                        <select
-                          value={slide.imageFit || 'cover'}
-                          onChange={(e) => updateSlideProperty(slide.id, 'imageFit', e.target.value)}
-                          className="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 outline-none bg-white font-bold"
-                        >
-                          <option value="cover">Kapla (Cover)</option>
-                          <option value="contain">Sığdır (Contain)</option>
-                          <option value="fill">Doldur (Fill)</option>
-                        </select>
-                      </div>
-
-                      {/* Pozisyon (X/Y) - Sadece 'cover' modunda etkili */}
-                      <div>
-                        <label className="block text-sm font-bold text-slate-500 mb-1">Görsel Pozisyonu (X / Y)</label>
-                        <div className='flex gap-2'>
-                          <input type="range" min="0" max="100" value={slide.imagePosition?.x ?? 50} onChange={(e) => updateSlideProperty(slide.id, 'imagePosition', { ...slide.imagePosition, x: parseInt(e.target.value) })} className="w-full accent-blue-500" title="Yatay Pozisyon" />
-                          <input type="range" min="0" max="100" value={slide.imagePosition?.y ?? 50} onChange={(e) => updateSlideProperty(slide.id, 'imagePosition', { ...slide.imagePosition, y: parseInt(e.target.value) })} className="w-full accent-blue-500" title="Dikey Pozisyon" />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Metin Alanları */}
-                  {[
-                    { label: 'Seri Etiketi (Örn: #1)', field: 'seriesTag' },
-                    { label: 'Üst Başlık (Hap)', field: 'subtitle' },
-                    { label: 'Ana Başlık (Büyük)', field: 'title', textarea: true },
-                    { label: 'CTA Metni (Baloncuk)', field: 'ctaText' },
-                    { label: 'Alt Kutu Başlığı', field: 'storeTitle' },
-                    { label: 'Alt Kutu Açıklaması', field: 'storeSubtitle' },
-                  ].map((item) => (
-                    (slide as any)[item.field] !== undefined && (
-                      <div key={item.field}>
-                        <label className="block text-sm font-bold text-slate-600 mb-2">{item.label}</label>
-                        {item.textarea ? (
-                          <textarea
-                            value={(slide as any)[item.field]}
-                            onChange={(e) => updateSlideProperty(slide.id, item.field as keyof SlideContent, e.target.value)}
-                            className="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 outline-none h-24 resize-none bg-white font-bold"
-                          />
-                        ) : (
-                          <input
-                            type="text"
-                            value={(slide as any)[item.field]}
-                            onChange={(e) => updateSlideProperty(slide.id, item.field as keyof SlideContent, e.target.value)}
-                            className="w-full p-3 border-2 border-slate-200 rounded-xl focus:border-blue-400 outline-none bg-white font-bold"
-                          />
-                        )}
-                      </div>
-                    )
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* SAĞ: Önizleme Alanı (Sabit ve Merkezde) */}
-        <div className="flex-1 bg-slate-100 flex items-center justify-center p-8 overflow-hidden relative">
-           {/* Arka plan deseni */}
-           <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
-           
-           <div className="flex gap-8 items-center h-full">
-             {slides.map((slide, index) => (
-               // DÜZELTME: Scale değeri ve container boyutu ayarlandı. Taşma önlendi.
-               // 1080px genişliği ekrana sığdırmak için yaklaşık 0.4 - 0.5 arası bir scale gerekiyor.
-               <div key={slide.id} className="transform scale-[0.45] 2xl:scale-[0.55] transition-transform origin-center shadow-2xl rounded-[40px] border-[8px] border-white/50">
-                  <PostTemplate
-                    reference={slideRefs.current[index]}
-                    {...slide}
-                    image={images[slide.id] || null}
-                  />
-               </div>
-             ))}
-           </div>
-        </div>
-
+            <Plus size={24} />
+        </button>
       </div>
-    </main>
+
+      {/* ORTA: Canvas (Sahne) */}
+      <div className="flex-1 bg-slate-100 flex items-center justify-center p-8 overflow-hidden relative">
+         {/* Arkaplan Grid Deseni */}
+         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
+         
+         {/* Canvas Alanı */}
+         <div className="w-full h-full flex items-center justify-center overflow-auto">
+            {activeSlideId && (
+              <div className="transform scale-[0.65] shadow-2xl shadow-slate-300 border border-slate-200 transition-all duration-300">
+                  <SlideRenderer 
+                    data={slides.find(s => s.id === activeSlideId)!} 
+                    lang={activeLanguage}
+                  />
+              </div>
+            )}
+         </div>
+      </div>
+
+      {/* SAĞ: Editör Paneli */}
+      <div className="z-20 shadow-xl relative h-full">
+        <EditorPanel />
+      </div>
+
+    </div>
   );
 }

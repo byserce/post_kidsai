@@ -1,49 +1,23 @@
-// src/core/types.ts
-
-export type Language = 'tr' | 'en' | 'de' | 'es';
-
-// 1. Transform Verisi (Telefonun ve Resmin uzaydaki konumu)
-export interface Transform3D {
-  x: number;
-  y: number;
-  scale: number;
-  rotateX: number; // 3D eğim (yukarı/aşağı bakış)
-  rotateY: number; // 3D eğim (sağa/sola bakış)
-  rotateZ: number; // 2D döndürme (saat yönü)
-}
-
-// 2. Resim Verisi (Telefonun içindeki görsel)
-export interface ImageContent {
-  url: string | null;
-  transform: Transform3D; // Resmin kendi dönüşü
-  fit: 'cover' | 'contain';
-}
-
-// 3. Telefon Objesi (Çerçevenin kendisi)
-export interface PhoneObject {
-  style: 'iphone-14' | 'flat' | 'floating'; // Telefon tipi
-  transform: Transform3D; // Telefonun sahnedeki duruşu
-}
-
-// 4. İçerik Verisi (Metinler, Renkler - Tasarım hariç saf bilgi)
-export interface SlideContent {
-  title: string;
-  subtitle: string;
-  badge?: string;
-  cta?: string;
-  footer?: string;
-}
-
-// 5. Ana Slayt Yapısı (Hepsini birleştiren model)
-export interface SlideData {
+export interface VideoLayer {
   id: string;
-  layoutId: string; // Hangi tasarım kodunun çalışacağını belirler (Örn: 'layout-hero-v1')
-  themeColor: string; // Renk paleti
-  
-  // Nesneler
-  phone: PhoneObject;
-  image: ImageContent;
-  content: Record<Language, SlideContent>; // Çoklu dil desteği direkt modelin içinde
+  type: 'video' | 'text' | 'shape';
+  src?: string; // Ekran kaydı videosunun yolu
+  text?: Record<string, string>; // Çoklu dil
+  style: any;
+  startFrame: number; // Hangi karede girecek
+  durationInFrames: number; // Ne kadar duracak
 }
 
-export const DEFAULT_TRANSFORM: Transform3D = { x: 0, y: 0, scale: 1, rotateX: 0, rotateY: 0, rotateZ: 0 };
+export interface ReelScene {
+  id: string;
+  templateId: 'viral-v1' | 'minimal-v1';
+  durationInSeconds: number; // Örn: 15 saniye
+  fps: number; // Genelde 30 veya 60
+  primaryColor: string;
+  videoSource: string; // Kullanıcının yüklediği ekran kaydı
+  texts: {
+    title: string;
+    hook: string; // "Bunu İzlemeden Geçme!" gibi
+    cta: string;
+  };
+}

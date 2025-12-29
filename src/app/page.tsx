@@ -1,257 +1,454 @@
-// src/app/page.tsx
 "use client";
 
-import { useEffect, useRef } from 'react';
-import { useEditorStore } from '@/core/store';
-import { SlideRenderer } from '@/components/renderer/SlideRenderer';
-import { EditorPanel } from '@/components/editor/EditorPanel';
-import { Plus } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Player, PlayerRef } from '@remotion/player';
+import { KidsAIReel, ClickEvent } from '@/remotion/compositions/KidsAIReel';
+import { ReelComposition, Language } from '@/core/types';
+import { Upload, Download, Play, Type, Palette, MonitorPlay, MousePointer2, Trash2, PlusCircle, Loader2, FileJson } from 'lucide-react';
 
-// PROFESYONEL ÇOCUK UYGULAMASI DEMO VERİSİ
-const KIDS_APP_DEMO = [
-  {
-    id: 'slide-1',
-    layoutId: 'hero-v1',
-    themeColor: 'cyan', // Uygulamanın ana rengi
-    content: {
-      tr: { 
-        title: 'KidsAI Dünyası', 
-        subtitle: 'YAPAY ZEKA KAMERA', 
-        cta: 'Hemen İndir',
-        description: 'Kamerayı doğrult, yapay zeka tanısın! Çocuklar için en eğlenceli öğrenme aracı.',
-        rating: '8 Dilde Eğitim'
-      },
-      en: { 
-        title: 'KidsAI World', 
-        subtitle: 'AI CAMERA MAGIC', 
-        cta: 'Download Now',
-        description: 'Point the camera, let AI recognize it! The most fun way to learn for kids.',
-        rating: 'Learn in 8 Languages'
-      },
-      de: { 
-        title: 'KidsAI Welt', 
-        subtitle: 'KI-KAMERA MAGIE', 
-        cta: 'Jetzt Laden',
-        description: 'Richte die Kamera aus, lass die KI es erkennen!',
-        rating: 'Lernen in 8 Sprachen'
-      },
-      es: { 
-        title: 'Mundo KidsAI', subtitle: 'CÁMARA IA MÁGICA', cta: 'Descargar', description: '¡Apunta la cámara y aprende!', rating: 'Aprende en 8 Idiomas' 
-      },
-      fr: { 
-        title: 'Monde KidsAI', subtitle: 'MAGIE CAMÉRA IA', cta: 'Télécharger', description: 'Pointez la caméra, laissez l\'IA reconnaître !', rating: 'Apprendre en 8 langues' 
-      },
-      ja: { 
-        title: 'KidsAIワールド', subtitle: 'AIカメラの魔法', cta: 'ダウンロード', description: 'カメラを向けて、AIに認識させよう！', rating: '8ヶ国語で学ぶ' 
-      },
-      ko: { 
-        title: 'KidsAI 월드', subtitle: 'AI 카메라 매직', cta: '다운로드', description: '카메라를 비추고 AI가 인식하게 하세요!', rating: '8개 언어로 학습' 
-      },
-      ar: { 
-        title: 'عالم KidsAI', subtitle: 'سحر الكاميرا', cta: 'حمل الآن', description: 'وجه الكاميرا، ودع الذكاء الاصطناعي يتعرف عليها!', rating: 'تعلم بـ 8 لغات' 
-      },
-    },
-    phone: {
-      transform: { x: 0, y: 40, rotateX: -5, rotateY: -5, rotateZ: 0, scale: 1.1 }
-    },
-    image: {
-      url: 'https://images.unsplash.com/photo-1602030028438-4cf153cbae9e?q=80&w=800&auto=format&fit=crop', // Çocuk ve Tablet görseli
-      fit: 'cover',
-      transform: { x: 0, y: 0, scale: 1.1, rotateZ: 0 }
-    }
-  },
-  {
-    id: 'slide-2',
-    layoutId: 'classic-v1',
-    themeColor: 'rose', // Klasik Mod rengi
-    content: {
-      tr: { title: 'Klasik Mod', subtitle: 'FOTOĞRAF ÇEK', cta: 'Hemen Dene', description: 'İnternet olmasa bile dilediğin zaman fotoğraf çek, nesnelerin ismini anında öğren!', rating: 'Eğitici' },
-      en: { title: 'Classic Mode', subtitle: 'TAKE PHOTO', cta: 'Try Now', description: 'Take photos anytime, even without internet, and learn object names instantly!', rating: 'Educational' },
-      de: { title: 'Klassik Modus', subtitle: 'FOTO MACHEN', cta: 'Probieren', description: 'Mach jederzeit Fotos, auch ohne Internet, und lerne sofort Namen!', rating: 'Lehrreich' },
-      es: { title: 'Modo Clásico', subtitle: 'TOMAR FOTO', cta: 'Probar', description: '¡Toma fotos en cualquier momento, incluso sin internet, y aprende nombres!', rating: 'Educativo' },
-      fr: { title: 'Mode Classique', subtitle: 'PRENDRE PHOTO', cta: 'Essayer', description: 'Prenez des photos à tout moment, même sans internet, et apprenez !', rating: 'Éducatif' },
-      ja: { title: 'クラシックモード', subtitle: '写真を撮る', cta: '試す', description: 'インターネットがなくても、いつでも写真を撮って名前を学ぼう！', rating: '教育的' },
-      ko: { title: '클래식 모드', subtitle: '사진 찍기', cta: '시도하기', description: '인터넷 없이도 언제든지 사진을 찍고 이름을 배우세요!', rating: '교육용' },
-      ar: { title: 'الوضع الكلاسيكي', subtitle: 'التقط صورة', cta: 'جرب الآن', description: 'التقط الصور في أي وقت، حتى بدون إنترنت، وتعلم الأسماء فوراً!', rating: 'تعليمي' },
-    },
-    phone: {
-      transform: { x: 0, y: 0, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1.0 }
-    },
-    image: {
-      url: 'https://images.unsplash.com/photo-1583337130417-3346a1be7dee?q=80&w=800&auto=format&fit=crop', // Köpek görseli
-      fit: 'cover',
-      transform: { x: 0, y: 0, scale: 1, rotateZ: 0 }
-    }
-  },
-  {
-    id: 'slide-3',
-    layoutId: 'smart-v1',
-    themeColor: 'purple', // Akıllı Mod (Smart Mode) rengi
-    content: {
-      tr: { 
-        title: 'Akıllı Mod', subtitle: 'AI ÖĞRETMEN', cta: 'Keşfet', description: 'Sadece ismini değil, ne olduğunu da anlatır! Çocuklar için basitleştirilmiş detaylı açıklamalar.', rating: "Editörün Seçimi",
-        bubble_1_title: "AI Analiz", bubble_1_main: "Bu bir Kedi! 🐱", bubble_1_sub: "Yumuşak tüyleri vardır ve mırıldanır.",
-        bubble_2_title: "Öğrenme Modu", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
-      },
-      en: { 
-        title: 'Smart Mode', subtitle: 'AI TEACHER', cta: 'Explore', description: 'Not just the name, but explains what it is! Detailed explanations simplified for kids.', rating: "Editor's Choice",
-        bubble_1_title: "AI Analysis", bubble_1_main: "This is a Cat! 🐱", bubble_1_sub: "It has soft fur and purrs.",
-        bubble_2_title: "Learning Mode", bubble_2_main: "¡Es un Gato! 🐱", bubble_2_sub: "Tiene pelaje suave y ronronea."
-      },
-      de: { 
-        title: 'Smart Modus', subtitle: 'KI LEHRER', cta: 'Entdecken', description: 'Nicht nur der Name, sondern auch Erklärungen! Kindgerecht vereinfacht.', rating: "Editor's Choice",
-        bubble_1_title: "KI Analyse", bubble_1_main: "Das ist eine Katze! 🐱", bubble_1_sub: "Sie hat weiches Fell und schnurrt.",
-        bubble_2_title: "Lernmodus", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
-      },
-      es: { 
-        title: 'Modo Inteligente', subtitle: 'PROFESOR IA', cta: 'Explorar', description: '¡No solo el nombre, explica qué es! Explicaciones detalladas para niños.', rating: "Editor's Choice",
-        bubble_1_title: "Análisis IA", bubble_1_main: "¡Es un Gato! 🐱", bubble_1_sub: "Tiene pelaje suave y ronronea.",
-        bubble_2_title: "Modo Aprendizaje", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
-      },
-      fr: { 
-        title: 'Mode Intelligent', subtitle: 'PROFESSEUR IA', cta: 'Explorer', description: 'Pas seulement le nom, mais explique ce que c\'est ! Explications simplifiées.', rating: "Choix de l'éditeur",
-        bubble_1_title: "Analyse IA", bubble_1_main: "C'est un Chat ! 🐱", bubble_1_sub: "Il a une fourrure douce et ronronne.",
-        bubble_2_title: "Mode Apprentissage", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
-      },
-      ja: { 
-        title: 'スマートモード', subtitle: 'AI先生', cta: '探検する', description: '名前だけでなく、それが何かも説明します！子供向けにわかりやすく解説。', rating: '編集部のおすすめ',
-        bubble_1_title: "AI分析", bubble_1_main: "これは猫です！ 🐱", bubble_1_sub: "柔らかい毛並みで喉を鳴らします。",
-        bubble_2_title: "学習モード", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
-      },
-      ko: { 
-        title: '스마트 모드', subtitle: 'AI 선생님', cta: '탐험하기', description: '이름뿐만 아니라 무엇인지도 설명해줍니다! 아이들을 위한 쉬운 설명.', rating: '에디터의 선택',
-        bubble_1_title: "AI 분석", bubble_1_main: "이것은 고양이입니다! 🐱", bubble_1_sub: "부드러운 털을 가지고 있고 가르랑거립니다.",
-        bubble_2_title: "학습 모드", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
-      },
-      ar: { 
-        title: 'الوضع الذكي', subtitle: 'معلم الذكاء', cta: 'استكشف', description: 'لا يذكر الاسم فقط، بل يشرح ما هو! شروحات مفصلة ومبسطة للأطفال.', rating: 'اختيار المحرر',
-        bubble_1_title: "تحليل الذكاء", bubble_1_main: "هذه قطة! 🐱", bubble_1_sub: "لديها فراء ناعم وتخرخر.",
-        bubble_2_title: "وضع التعلم", bubble_2_main: "This is a Cat! 🐱", bubble_2_sub: "It has soft fur and purrs."
-      },
-    },
-    phone: {
-      transform: { x: 0, y: 20, rotateX: 0, rotateY: 0, rotateZ: 0, scale: 1.2 }
-    },
-    image: {
-      url: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=800&auto=format&fit=crop', // Mutlu çocuk görseli
-      fit: 'cover',
-      transform: { x: 0, y: 0, scale: 1.1, rotateZ: 0 }
-    }
-  }
-];
+// Varsayılan Veriler
+const DEFAULT_TEXTS = {
+  tr: { hook: "HAYVANLARI\nKEŞFET! 🦁", cta: "HEMEN İNDİR", title: "KidsAI" },
+  en: { hook: "DISCOVER\nANIMALS! 🦁", cta: "DOWNLOAD NOW", title: "KidsAI" },
+  de: { hook: "TIERE\nENTDECKEN! 🦁", cta: "JETZT LADEN", title: "KidsAI" },
+  es: { hook: "¡DESCUBRE\nANIMALES! 🦁", cta: "DESCARGAR", title: "KidsAI" },
+};
 
-export default function PostFactoryPage() {
-  const { slides, addSlide, activeSlideId, selectSlide, activeLanguage } = useEditorStore();
+export default function EditorPage() {
+  // State Yönetimi
+  const [videoSrc, setVideoSrc] = useState<string | null>(null);
+  const [durationInSeconds, setDurationInSeconds] = useState(15);
+  const [trimStart, setTrimStart] = useState(0);
+  const [trimEnd, setTrimEnd] = useState(15);
+  const [activeLang, setActiveLang] = useState<Language>('tr');
+  const [primaryColor, setPrimaryColor] = useState('#EF4444'); // Kırmızı
+  const [texts, setTexts] = useState(DEFAULT_TEXTS);
+  const [isRendering, setIsRendering] = useState(false);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   
-  // Zustand'ın state'ini toplu güncellemek için setState fonksiyonuna erişiyoruz
-  const setState = useEditorStore.setState;
-  const isLoaded = useRef(false);
+  // Tıklama Efekti State'leri
+  const [clickEvents, setClickEvents] = useState<ClickEvent[]>([]);
+  const [isClickMode, setIsClickMode] = useState(false);
+  const playerRef = useRef<PlayerRef>(null);
 
-  // Sayfa ilk yüklendiğinde: Demo verisini al + LocalStorage'daki görsel ayarları uygula
-  useEffect(() => {
-    const savedData = localStorage.getItem('kidsai-post-creator-v1');
-    
-    // Demo verisinin temiz bir kopyasını oluştur
-    let initialSlides = JSON.parse(JSON.stringify(KIDS_APP_DEMO));
-
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        // Sadece görsel ayarları (overrides) demo verisiyle birleştir
-        if (parsed.overrides && Array.isArray(parsed.overrides)) {
-          console.log("Local storage görsel ayarları yüklendi.");
-          
-          initialSlides = initialSlides.map((slide: any) => {
-            const saved = parsed.overrides.find((o: any) => o.id === slide.id);
-            if (saved) {
-              return {
-                ...slide,
-                phone: saved.phone || slide.phone, // Kayıtlı telefon konumu
-                image: saved.image || slide.image  // Kayıtlı resim
-              };
-            }
-            return slide;
-          });
-        }
-      } catch (e) {
-        console.error("Local storage yüklenemedi:", e);
-      }
+  // Video Yükleme İşlemi
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setVideoFile(file);
+      const url = URL.createObjectURL(file);
+      setVideoSrc(url);
+      
+      // Videonun gerçek süresini almayı dene
+      const video = document.createElement('video');
+      video.src = url;
+      video.onloadedmetadata = () => {
+        const duration = video.duration;
+        setTrimEnd(duration);
+        setDurationInSeconds(duration);
+      };
     }
+  };
 
-    // State'i başlat
-    setState({ 
-      slides: initialSlides, 
-      activeSlideId: initialSlides[0].id 
-    });
-    
-    isLoaded.current = true;
-  }, []);
-
-  // Sadece görsel ayarları (Phone ve Image) kaydet, yazıları kaydetme
-  useEffect(() => {
-    if (!isLoaded.current) return;
-
-    // Sadece id, phone ve image verilerini filtrele
-    const overrides = slides.map(s => ({
-      id: s.id,
-      phone: s.phone,
-      image: s.image
+  // Metin Güncelleme
+  const updateText = (key: keyof typeof DEFAULT_TEXTS.tr, value: string) => {
+    setTexts(prev => ({
+      ...prev,
+      [activeLang]: { ...prev[activeLang], [key]: value }
     }));
+  };
+
+  // Tıklama Ekleme İşlemi
+  const handlePreviewClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isClickMode || !playerRef.current) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    const currentFrame = playerRef.current.getCurrentFrame();
+
+    if (currentFrame !== null) {
+        const newClick: ClickEvent = {
+            id: Date.now().toString(),
+            frame: currentFrame,
+            x,
+            y
+        };
+        setClickEvents([...clickEvents, newClick]);
+    }
+  };
+
+  const removeClickEvent = (id: string) => {
+      setClickEvents(clickEvents.filter(c => c.id !== id));
+  };
+
+  const updateClickTime = (id: string, newTime: number) => {
+    setClickEvents(prev => prev.map(c => 
+        c.id === id ? { ...c, frame: Math.max(0, Math.round(newTime * 30)) } : c
+    ));
+  };
+
+  // Proje Kaydetme (JSON - Yedek)
+  const handleSaveProject = () => {
+    const exportData = {
+        composition: "KidsAIReel",
+        version: "1.0",
+        createdAt: new Date().toISOString(),
+        settings: {
+            durationInSeconds,
+            trimStart,
+            trimEnd,
+            activeLang,
+            primaryColor,
+            texts,
+        },
+        timeline: {
+            clickEvents
+        }
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kidsai-project-${activeLang}-${Date.now()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  // MP4 Render İşlemi (Sunucu Taraflı)
+  const handleRender = async () => {
+    if (!videoFile) {
+        alert("Lütfen önce bir video yükleyin.");
+        return;
+    }
     
-    localStorage.setItem('kidsai-post-creator-v1', JSON.stringify({ overrides }));
-  }, [slides]);
+    setIsRendering(true);
+    try {
+        const formData = new FormData();
+        formData.append('file', videoFile);
+        formData.append('inputProps', JSON.stringify({
+            durationInSeconds,
+            trimDuration: trimEnd - trimStart, // Süreyi hesapla
+            primaryColor,
+            texts,
+            activeLanguage: activeLang,
+            clickEvents
+        }));
+        // Kırpma bilgilerini ayrıca gönder (Server.ts bu alanları bekliyor)
+        formData.append('trimStart', trimStart.toString());
+        formData.append('trimDuration', (trimEnd - trimStart).toString());
+
+        // Next.js API yerine harici Render Sunucusuna (Port 8000) istek atıyoruz
+        const response = await fetch('http://localhost:8000/render', { method: 'POST', body: formData });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.details || errorData.error || 'Render işlemi başarısız oldu.');
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `kidsai-render-${activeLang}-${Date.now()}.mp4`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error(error);
+        alert(`Render Hatası: ${(error as Error).message}`);
+    } finally {
+        setIsRendering(false);
+    }
+  };
+
+  // Render edilecek süreyi hesapla
+  const currentDuration = trimEnd - trimStart;
 
   return (
-    <div className="flex w-full h-screen bg-slate-50 overflow-hidden font-sans text-slate-900">
+    <div className="flex h-screen bg-[#0f172a] text-white font-sans overflow-hidden">
       
-      {/* SOL: Slayt Listesi */}
-      <div className="w-24 bg-white border-r border-slate-200 flex flex-col items-center py-4 gap-4 z-20 overflow-y-auto custom-scrollbar">
-        {slides.map((slide, index) => (
-          <button
-            key={slide.id}
-            onClick={() => selectSlide(slide.id)}
-            className={`w-16 h-16 rounded-xl border-2 transition-all overflow-hidden relative shrink-0 ${
-              activeSlideId === slide.id ? 'border-blue-600 ring-2 ring-blue-100 scale-105' : 'border-slate-200 hover:border-slate-400'
-            }`}
-          >
-            {/* Küçük Önizleme - Performans için scale kullanıyoruz */}
-            <div className="absolute inset-0 scale-[0.15] origin-top-left w-[1080px] h-[1350px] pointer-events-none bg-white">
-                <SlideRenderer data={slide} lang={activeLanguage} />
-            </div>
-            <div className="absolute bottom-0 right-0 bg-black text-white text-[10px] px-1 font-bold">{index + 1}</div>
-          </button>
-        ))}
+      {/* --- SOL PANEL: KONTROLLER --- */}
+      <div className="w-[400px] bg-[#1e293b] border-r border-slate-700 flex flex-col h-full z-20 shadow-2xl">
         
-        <button 
-            onClick={() => addSlide('split-v1')} 
-            className="w-12 h-12 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-600 shrink-0 transition-colors"
-            title="Yeni Slayt Ekle"
-        >
-            <Plus size={24} />
-        </button>
-      </div>
+        {/* Header */}
+        <div className="p-6 border-b border-slate-700 bg-slate-800/50">
+          <div className="flex items-center gap-3 mb-1">
+            <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+               <MonitorPlay size={24} className="text-white" />
+            </div>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
+              Reels Factory
+            </h1>
+          </div>
+          <p className="text-xs text-slate-400 ml-1">Viral Video Oluşturucu v1.0</p>
+        </div>
 
-      {/* ORTA: Canvas (Sahne) */}
-      <div className="flex-1 bg-slate-100 flex items-center justify-center p-8 overflow-hidden relative">
-         {/* Arkaplan Grid Deseni */}
-         <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#000 1px, transparent 1px)', backgroundSize: '20px 20px' }} />
-         
-         {/* Canvas Alanı */}
-         <div className="w-full h-full flex items-center justify-center overflow-auto">
-            {activeSlideId && (
-              <div className="transform scale-[0.65] shadow-2xl shadow-slate-300 border border-slate-200 transition-all duration-300">
-                  <SlideRenderer 
-                    data={slides.find(s => s.id === activeSlideId)!} 
-                    lang={activeLanguage}
-                  />
+        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+          
+          {/* 1. Video Upload */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-purple-400 uppercase tracking-wider flex items-center gap-2">
+              <Upload size={16} /> Medya Kaynağı
+            </label>
+            <div className="relative group">
+              <input 
+                type="file" 
+                accept="video/*"
+                onChange={handleFileUpload}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div className="border-2 border-dashed border-slate-600 rounded-xl p-8 text-center bg-slate-800/50 group-hover:border-purple-500 group-hover:bg-slate-800 transition-all">
+                {videoSrc ? (
+                  <span className="text-green-400 font-medium flex items-center justify-center gap-2">
+                    ✅ Video Yüklendi
+                  </span>
+                ) : (
+                  <span className="text-slate-400 text-sm">
+                    Ekran kaydını buraya sürükle veya seç
+                  </span>
+                )}
               </div>
-            )}
-         </div>
+            </div>
+          </div>
+
+          {/* YENİ: Video Kesme (Trim) */}
+          {videoSrc && (
+            <div className="space-y-3">
+              <label className="text-sm font-semibold text-green-400 uppercase tracking-wider flex items-center gap-2">
+                ✂️ Video Kesme (Saniye)
+              </label>
+              <div className="flex items-center gap-2 bg-slate-800/50 p-3 rounded-xl border border-slate-700">
+                <div className="flex-1">
+                    <span className="text-xs text-slate-500 block mb-1">Başlangıç</span>
+                    <input 
+                        type="number" 
+                        step="0.1" 
+                        min="0"
+                        max={trimEnd}
+                        value={trimStart}
+                        onChange={(e) => setTrimStart(Number(e.target.value))}
+                        className="w-full bg-slate-900 border border-slate-600 rounded p-1 text-center font-mono text-white"
+                    />
+                </div>
+                <span className="text-slate-500">➜</span>
+                <div className="flex-1">
+                    <span className="text-xs text-slate-500 block mb-1">Bitiş</span>
+                    <input 
+                        type="number" 
+                        step="0.1" 
+                        min={trimStart}
+                        value={trimEnd}
+                        onChange={(e) => {
+                            setTrimEnd(Number(e.target.value));
+                            setDurationInSeconds(Number(e.target.value) - trimStart);
+                        }}
+                        className="w-full bg-slate-900 border border-slate-600 rounded p-1 text-center font-mono text-white"
+                    />
+                </div>
+              </div>
+              <p className="text-xs text-center text-slate-500">
+                Süre: <span className="text-green-400 font-bold">{currentDuration.toFixed(1)} sn</span>
+              </p>
+            </div>
+          )}
+
+          {/* 2. Dil Seçimi */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-blue-400 uppercase tracking-wider flex items-center gap-2">
+              Dil Seçimi
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {(['tr', 'en', 'de', 'es'] as Language[]).map(lang => (
+                <button
+                  key={lang}
+                  onClick={() => setActiveLang(lang)}
+                  className={`py-2 rounded-lg text-sm font-bold transition-all ${
+                    activeLang === lang 
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                      : 'bg-slate-700 text-slate-400 hover:bg-slate-600'
+                  }`}
+                >
+                  {lang.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 3. Metin Düzenleme */}
+          <div className="space-y-4">
+            <label className="text-sm font-semibold text-pink-400 uppercase tracking-wider flex items-center gap-2">
+              <Type size={16} /> Metinler ({activeLang.toUpperCase()})
+            </label>
+            
+            <div className="space-y-1">
+              <span className="text-xs text-slate-500 ml-1">Vurucu Başlık (Hook)</span>
+              <textarea
+                value={texts[activeLang].hook}
+                onChange={(e) => updateText('hook', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-pink-500 outline-none resize-none h-20"
+                placeholder="Örn: BUNU İZLEMEDEN GEÇME!"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <span className="text-xs text-slate-500 ml-1">Aksiyon Çağrısı (CTA)</span>
+              <input
+                value={texts[activeLang as keyof typeof texts].cta}
+                onChange={(e) => updateText('cta', e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-pink-500 outline-none"
+                placeholder="Örn: Link Bio'da"
+              />
+            </div>
+          </div>
+
+          {/* 5. Tıklama Efektleri */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-cyan-400 uppercase tracking-wider flex items-center gap-2">
+              <MousePointer2 size={16} /> Tıklama Efektleri
+            </label>
+            
+            <button
+                onClick={() => setIsClickMode(!isClickMode)}
+                className={`w-full py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all ${
+                    isClickMode 
+                    ? 'bg-cyan-500 text-white shadow-lg shadow-cyan-500/20 ring-2 ring-white' 
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-600'
+                }`}
+            >
+                {isClickMode ? 'Kayıt Modu Aktif (Videoya Tıkla)' : 'Tıklama Ekle'}
+                {isClickMode ? <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"/> : <PlusCircle size={18} />}
+            </button>
+
+            {/* Eklenen Tıklamalar Listesi */}
+            <div className="space-y-2 max-h-40 overflow-y-auto pr-1 custom-scrollbar">
+                {clickEvents.length === 0 && !isClickMode && (
+                    <p className="text-xs text-slate-500 text-center py-2">Henüz tıklama efekti eklenmedi.</p>
+                )}
+                {clickEvents.map((click, index) => (
+                    <div key={click.id} className="flex items-center justify-between bg-slate-800/50 p-2 rounded-lg border border-slate-700 text-xs">
+                        <div className="flex items-center gap-2">
+                            <span className="text-slate-400 font-bold">#{index + 1}</span>
+                            <input 
+                                type="number" 
+                                step="0.1" 
+                                min="0"
+                                className="w-16 bg-slate-900 border border-slate-600 rounded px-1 text-center text-cyan-400 font-mono focus:ring-1 focus:ring-cyan-500 outline-none"
+                                value={(click.frame / 30).toFixed(1)}
+                                onChange={(e) => updateClickTime(click.id, parseFloat(e.target.value))}
+                            />
+                            <span className="text-slate-500">sn</span>
+                        </div>
+                        <button onClick={() => removeClickEvent(click.id)} className="text-slate-500 hover:text-red-400 transition-colors">
+                            <Trash2 size={14} />
+                        </button>
+                    </div>
+                ))}
+            </div>
+          </div>
+
+          {/* 4. Renk Ayarları */}
+          <div className="space-y-3">
+            <label className="text-sm font-semibold text-yellow-400 uppercase tracking-wider flex items-center gap-2">
+              <Palette size={16} /> Tema Rengi
+            </label>
+            <div className="flex gap-3">
+              {['#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'].map(color => (
+                <button
+                  key={color}
+                  onClick={() => setPrimaryColor(color)}
+                  className={`w-8 h-8 rounded-full transition-transform ${
+                    primaryColor === color ? 'ring-2 ring-white scale-110' : 'hover:scale-105'
+                  }`}
+                  style={{ backgroundColor: color }}
+                />
+              ))}
+            </div>
+          </div>
+
+        </div>
+
+        {/* Footer: Export */}
+        <div className="p-6 border-t border-slate-700 bg-slate-800">
+          <div className="flex gap-2">
+            <button 
+                onClick={handleSaveProject}
+                className="bg-slate-700 hover:bg-slate-600 text-white p-4 rounded-xl transition-colors"
+                title="Projeyi Kaydet (JSON)"
+            >
+                <FileJson size={20} />
+            </button>
+
+          <button 
+            className={`flex-1 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold py-4 rounded-xl shadow-lg shadow-green-500/20 flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] ${isRendering ? 'opacity-75 cursor-not-allowed' : ''}`}
+            onClick={handleRender}
+            disabled={isRendering}
+          >
+            {isRendering ? <Loader2 size={20} className="animate-spin" /> : <Download size={20} />}
+            {isRendering ? 'Render Alınıyor...' : `MP4 Olarak İndir (${activeLang.toUpperCase()})`}
+          </button>
+          </div>
+        </div>
+
       </div>
 
-      {/* SAĞ: Editör Paneli */}
-      <div className="z-20 shadow-xl relative h-full">
-        <EditorPanel />
+      {/* --- ORTA PANEL: PREVIEW PLAYER --- */}
+      <div className="flex-1 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] bg-slate-900 flex items-center justify-center relative overflow-hidden">
+        
+        {/* Arka plan dekoru */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent pointer-events-none" />
+
+        <div className="relative z-10 shadow-2xl rounded-2xl overflow-hidden ring-8 ring-slate-800/50">
+          {videoSrc ? (
+            <div className="relative">
+                {/* Tıklama Yakalama Katmanı (Sadece Mod Aktifken) */}
+                {isClickMode && (
+                    <div 
+                        className="absolute inset-0 z-50 cursor-crosshair bg-cyan-500/10 hover:bg-cyan-500/20 transition-colors border-4 border-cyan-400 border-dashed rounded-lg"
+                        onClick={handlePreviewClick}
+                        title="Efekt eklemek için tıklayın"
+                    />
+                )}
+                
+                <Player
+                  ref={playerRef}
+                  key={`${videoSrc}-${trimStart}-${trimEnd}`} // Değerler değişince Player'ı yenile
+                  component={KidsAIReel}
+                  durationInFrames={Math.max(1, Math.floor(currentDuration * 30))} // Kesilen süreye göre frame ayarla
+                  fps={30}
+                  compositionWidth={1080}
+                  compositionHeight={1920}
+                  style={{
+                    width: '400px', // Önizleme boyutu
+                    height: '711px',
+                  }}
+                  controls
+                  autoPlay
+                  loop
+                  initiallyMuted={false}
+                  clickToPlay={true}
+                  inputProps={{
+                    id: 'preview',
+                    videoSrc: videoSrc,
+                    durationInSeconds: currentDuration,
+                    trimStart, // Başlangıç noktasını gönder
+                    primaryColor,
+                    texts,
+                    activeLanguage: activeLang,
+                    clickEvents // Yeni prop'u gönderiyoruz
+                  }}
+                />
+            </div>
+          ) : (
+            <div className="w-[400px] h-[711px] bg-slate-800 flex flex-col items-center justify-center text-slate-500 border-2 border-dashed border-slate-700 rounded-2xl">
+              <Play size={48} className="mb-4 opacity-50" />
+              <p>Önizleme için video yükleyin</p>
+            </div>
+          )}
+        </div>
+
       </div>
 
     </div>

@@ -30,6 +30,17 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  experimental: {
+    serverComponentsExternalPackages: [
+      '@remotion/bundler',
+      '@remotion/renderer',
+      'tailwindcss',
+      'autoprefixer',
+      'postcss',
+      'fluent-ffmpeg',
+      'ffmpeg-static',
+    ],
+  },
 };
 
 export default nextConfig;
